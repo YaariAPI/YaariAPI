@@ -18,7 +18,7 @@ const ChatsBottom = () => {
       // },
     //   {
     //     headers: {
-    //       Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImNoaW50YW4iLCJzdWIiOiI0ODhkZmIzMy01NzU2LTRiYWUtYmYyMy0zNGU4ZjgxZjY4ZWMiLCJpYXQiOjE3NDE1ODAwMTAsImV4cCI6MTc0MTU4MzYxMH0.9HU4uT3msySCVV0eSnD1lis0pTA6LFJ41eqatzvEexI',
+    //       Authorization: ' you're authorized token',
     //       'Content-Type': 'application/json'
     //     }
     //   }
@@ -32,9 +32,9 @@ const ChatsBottom = () => {
       url: 'http://localhost:3000/webhook/sendMsg',
       method: 'POST',
       headers: {
-          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImNoaW50YW4iLCJzdWIiOiI0ODhkZmIzMy01NzU2LTRiYWUtYmYyMy0zNGU4ZjgxZjY4ZWMiLCJpYXQiOjE3NDE1ODAwMTAsImV4cCI6MTc0MTU4MzYxMH0.9HU4uT3msySCVV0eSnD1lis0pTA6LFJ41eqatzvEexI`,
+          'Authorization': ` you're authorized token`,
           'Content-Type': 'application/json',
-          'accept': 'pplication/json',
+          'accept': 'application/json',
       },
       data: JSON.stringify({
         senderId: 565830889949112,
