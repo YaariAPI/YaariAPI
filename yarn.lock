@@ -21986,7 +21986,7 @@ __metadata:
     ts-loader: "npm:^9.4.3"
     ts-morph: "npm:25.0.0"
     tsconfig-paths: "npm:^4.2.0"
-    typeorm: "npm:^0.3.20"
+    typeorm: "npm:^0.3.25"
     typescript: "npm:^5.8.3"
     webpack: "npm:^5.99.9"
     xlsx: "npm:^0.18.5"
@@ -23783,7 +23783,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typeorm@npm:^0.3.20, typeorm@npm:^0.3.21":
+"typeorm@npm:^0.3.21, typeorm@npm:^0.3.25":
   version: 0.3.25
   resolution: "typeorm@npm:0.3.25"
   dependencies:

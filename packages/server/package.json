@@ -12,6 +12,8 @@
     "command:prod": "node dist/src/command/command",
     "worker:prod": "node dist/src/queue-worker/queue-worker",
     "database:init:prod": "yarn ts-node ./scripts/setup-db.ts && yarn database:migrate:run",
+    "database:migrate:workspace:generate": "nx run server:typeorm migration:generate src/database/typeorm/workspace/migrations/new -d src/database/typeorm/workspace/workspace.datasource.ts",
+    "database:migrate:workspace:run": "nx run server:typeorm migration:run -d src/database/typeorm/workspace/workspace.datasource.ts",
     "database:migrate:generate": "nx run server:typeorm migration:generate src/database/typeorm/core/migrations/new -d src/database/typeorm/core/core.datasource.ts",
     "database:migrate:run": "nx run server:typeorm migration:run -d src/database/typeorm/core/core.datasource.ts",
     "typeorm": "../../node_modules/typeorm/cli.js",
@@ -53,7 +55,7 @@
     "rxjs": "^7.8.1",
     "socket.io": "^4.8.1",
     "ts-morph": "25.0.0",
-    "typeorm": "^0.3.20",
+    "typeorm": "^0.3.25",
     "typescript": "^5.8.3",
     "webpack": "^5.99.9",
     "xlsx": "^0.18.5"

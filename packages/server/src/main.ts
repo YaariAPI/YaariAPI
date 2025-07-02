@@ -20,7 +20,7 @@ async function bootstrap() {
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
-
+ app.use(new WorkspaceMiddleware().use);
   app.enableCors();
   app.useStaticAssets(path.join(__dirname, "../uploads"))
 

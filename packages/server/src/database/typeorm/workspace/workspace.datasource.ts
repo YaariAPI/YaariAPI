@@ -1,6 +1,10 @@
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { config } from 'dotenv';
+import { User } from '../../../modules/user/user.entity';
+import { Workspace } from '../../../modules/workspace/workspace.entity';
+import { WorkspaceMember } from '../../../modules/workspace/workspaceMember.entity';
 import { DataSource, DataSourceOptions } from 'typeorm';
+import { Broadcast } from '../../../customer-modules/broadcast/broadcast.entity';
 config({ path: process.env.NODE_ENV === 'test' ? '.env.test' : '.env' });
 
 const isJest = process.argv.some((arg) => arg.includes('jest'));
@@ -10,7 +14,13 @@ export const typeORMWorkspaceModuleOptions: TypeOrmModuleOptions = {
   type: 'postgres',
   logging: ['error'],
   entities: [
+    User,
+    Workspace, 
+    WorkspaceMember,
+    Broadcast,
+    `${isJest ? '' : 'dist/'}/modules/**/*.entity{.ts,.js}`,
     `${isJest ? '' : 'dist/'}/customer-modules/**/*.entity{.ts,.js}`,
+    `${isJest ? 'packages/server/src' : 'dist/'}/customer-modules/**/*.entity{.ts,.js}`,
   ],
   synchronize: false,
   migrationsRun: false,
@@ -27,6 +37,10 @@ export const typeORMWorkspaceModuleOptions: TypeOrmModuleOptions = {
       : undefined,
 };
 
-// export const workspaceConnectionSource = new DataSource(
+export const workspaceConnectionSource = new DataSource(
+  typeORMWorkspaceModuleOptions as DataSourceOptions,
+);
+
+// export const connectionSource = new DataSource(
 //   typeORMWorkspaceModuleOptions as DataSourceOptions,
 // );
