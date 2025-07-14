@@ -3,10 +3,12 @@ import { useContext, useEffect, useState } from "react"
 import { useMutation, useQuery } from "@apollo/client"
 import { TemplateContext } from "@components/Context/TemplateContext"
 import { findWaAllTemplate, GET_TEMPLATE_STATUS } from "@src/generated/graphql"
-// import { convertRawPayloadToPreviewData } from "../utils/rawPayloadtoPreviewTemplate"
+import { convertRawPayloadToPreviewData } from "@src/utils/rawPayloadtoPreviewTemplate"
+import { FiEdit2 } from "react-icons/fi"
+import { GrDocumentUpdate } from "react-icons/gr";
 
-const TemplateTable = ({ setIsTemplatePreviewVis }: any) => {
-    const { setTemplateFormData }: any = useContext(TemplateContext)
+const TemplateTable = ({ setIsTemplateFormVis, setIsTemplatePreviewVis }: any) => {
+    const { setTemplateFormData, setTemplateStatusAId }: any = useContext(TemplateContext)
     const navigate = useNavigate()
     const [templates, setTemplates] = useState([{
         id: '',
@@ -17,7 +19,6 @@ const TemplateTable = ({ setIsTemplatePreviewVis }: any) => {
         rawComponents: []
     }])
 
-    const [templateId, setTemplateId] = useState("")
     const [GetTemplateStatus] = useMutation(GET_TEMPLATE_STATUS);
 
     const HandelSendTemplate = (templateId: string, templateName: string) => {
@@ -31,8 +32,6 @@ const TemplateTable = ({ setIsTemplatePreviewVis }: any) => {
 
     const { data: templateData, loading: templateLoading, refetch: templateRefetch }: any = useQuery(findWaAllTemplate);
     useEffect(() => {
-        console.log(templateData,'...............templateData');
-        
         templateRefetch()
         if (templateData && !templateLoading) {
             setTemplates(templateData.findAllTemplate)
@@ -55,6 +54,7 @@ const TemplateTable = ({ setIsTemplatePreviewVis }: any) => {
                             <th scope="col" className="px-6 py-4 text-center truncate">Template Id</th>
                             <th scope="col" className="px-6 py-4 text-center truncate">Status</th>
                             <th scope="col" className="px-6 py-4 text-center truncate">Category</th>
+                            <th scope="col" className="px-6 py-4 text-center truncate">Update</th>
                             <th scope="col" className="px-6 py-4 text-center truncate">Check Template Status</th>
                             <th scope="col" className="px-6 py-4 text-center truncate">preview</th>
                             <th scope="col" className="px-6 py-4 text-center truncate">Send Template</th>
@@ -84,6 +84,7 @@ const TemplateTable = ({ setIsTemplatePreviewVis }: any) => {
                                         {template.status.toLowerCase() == "approved" ? <p className="p-1.5 bg-green-600 rounded-full "></p> : <></>}
                                         {template.status.toLowerCase() == "rejected" ? <p className="p-1.5 bg-red-600 rounded-full "></p> : <></>}
                                         {template.status.toLowerCase() == "pending" ? <p className="p-1.5 bg-yellow-600 rounded-full "></p> : <></>}
+                                        {template.status.toLowerCase() == "saved" ? <p className="p-1.5 bg-yellow-600 rounded-full "></p> : <></>}
                                         <p className="p-2">{template.status.toUpperCase()}</p>
                                     </div>
 
@@ -94,6 +95,28 @@ const TemplateTable = ({ setIsTemplatePreviewVis }: any) => {
                                 >
                                     {template.category.toUpperCase()}
                                 </td>
+                                <td className="px-4 py-2 text-center">
+                                    <button
+                                        disabled = {template.status.toLowerCase() === 'pending'}
+                                        onClick={() => {
+                                            const templatePreviewData = convertRawPayloadToPreviewData(template.rawComponents);
+                                    setTemplateFormData({
+                                        account : template.account,
+                                        templateName: template.templateName,
+                                        category: template.category,
+                                        language: template.language,
+                                        ...templatePreviewData})
+                                    setTemplateStatusAId({
+                                        dbTemplateId : template.id,
+                                        status : template.status.toLowerCase()
+                                    })
+                                    setIsTemplateFormVis(true)
+                                        }}
+                                        className={`text-lg text-center text-violet-500 cursor-pointer hover:bg-violet-200 p-2 rounded disabled:bg-violet-200 disabled:cursor-default`}
+                                    >
+                                        <GrDocumentUpdate />
+                                    </button>
+                                </td>
                                 <td onClick={() => HandleTempalteStatus(template.templateId)}
                                     className="px-6 py-4 text-center truncate max-w-[150px] underline text-blue-500 hover:text-blue-700 cursor-pointer"
                                     title="sendTemplate"
@@ -101,7 +124,8 @@ const TemplateTable = ({ setIsTemplatePreviewVis }: any) => {
                                     Check Template Status
                                 </td>
                                 <td onClick={() => {
-                                    setTemplateFormData(template)
+                                    const templatePreviewData = convertRawPayloadToPreviewData(template.rawComponents);
+                                    setTemplateFormData(templatePreviewData)
                                     setIsTemplatePreviewVis(true)
                                 }}
                                     className="px-6 py-4 text-center truncate max-w-[150px] underline text-blue-500 hover:text-blue-700 cursor-pointer"

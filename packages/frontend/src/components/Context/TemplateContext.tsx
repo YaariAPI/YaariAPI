@@ -3,8 +3,8 @@ import { createContext, useState } from "react";
 interface TemplateContextProps {
   templateFormData: any,
   setTemplateFormData: Function,
-  templateData: any,
-  setTemplateData: Function
+  templateStatusAId: any,
+  setTemplateStatusAId: Function
 }
 
 export const TemplateContext = createContext<TemplateContextProps | undefined>(undefined)
@@ -26,30 +26,34 @@ Thank you.`,
     variables: [],
     fileUrl: ''
   });
-
-  const [templateData, setTemplateData] = useState({
-    account: '',
-    templateName: '',
-    category: 'UTILITY',
-    language: 'en_US',
-    bodyText: `Hi {{1}},
-Your order *{{2}}* from *{{3}}* has been shipped.
-To track the shipping: {{4}}
-Thank you.`,
-    footerText: '',
-    button: [],
-    variables: [],
-    headerType: 'NONE',
-    header_handle: '',
-    fileUrl: ''
+  const [ templateStatusAId, setTemplateStatusAId ] = useState({
+    dbTemplateId : '',
+    status : ''
   });
+
+//   const [templateData, setTemplateData] = useState({
+//     account: '',
+//     templateName: '',
+//     category: 'UTILITY',
+//     language: 'en_US',
+//     bodyText: `Hi {{1}},
+// Your order *{{2}}* from *{{3}}* has been shipped.
+// To track the shipping: {{4}}
+// Thank you.`,
+//     footerText: '',
+//     button: [],
+//     variables: [],
+//     headerType: 'NONE',
+//     header_handle: '',
+//     fileUrl: ''
+//   });
 
   return (
     <TemplateContext.Provider value={{
       templateFormData,
       setTemplateFormData,
-      templateData,
-      setTemplateData
+      templateStatusAId, 
+      setTemplateStatusAId
     }}>
       {children}
     </TemplateContext.Provider>

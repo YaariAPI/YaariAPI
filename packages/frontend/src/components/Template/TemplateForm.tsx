@@ -6,7 +6,7 @@ import TemplateButton from "./TemplateButton";
 import TemplateVariables from "./TemplateVariables";
 import { useMutation } from "@apollo/client";
 import { cookieStorage } from '@src/utils/cookie-storage';
-import { SUBMIT_TEMPLATE } from "@src/generated/graphql";
+import { SAVE_TEMPLATE, SUBMIT_TEMPLATE, UPDATE_TEMPLATE } from "@src/generated/graphql";
 import { TemplateContext } from "@components/Context/TemplateContext";
 import { Post } from "@src/modules/domain-manager/hooks/axios";
 
@@ -37,28 +37,16 @@ type TemplateData = {
 };
 
 const TemplateForm = () => {
-  const [templateData, setTemplateData] = useState<TemplateData>({
-    account: '',
-    templateName: '',
-    category: 'UTILITY',
-    language: 'en_US',
-    bodyText: `Hi {{1}},
-Your order *{{2}}* from *{{3}}* has been shipped.
-To track the shipping: {{4}}
-Thank you.`,
-    footerText: '',
-    button: [],
-    variables: [],
-    headerType: 'NONE',
-    header_handle: '',
-    fileUrl: ''
-  });
+  const { templateFormData, setTemplateFormData, templateStatusAId }: any = useContext(TemplateContext)
+  const [templateData, setTemplateData] = useState<TemplateData>(() => ({ ...templateFormData }));
   const [status, setStatus] = useState(null);
-  const [templateId, setTemplateId] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<String | null>(null);
   const [submitTemplate] = useMutation(SUBMIT_TEMPLATE);
-  const { templateFormData, setTemplateFormData }: any = useContext(TemplateContext)
+  const [saveTemplate] = useMutation(SAVE_TEMPLATE);
+  const [updateTemplate] = useMutation(UPDATE_TEMPLATE);
+
+
   const [file, setFile] = useState<File | null>(null);
   const [isValidated, setIsValidated] = useState(false)
   const handleInputChange = (e: any) => {
@@ -67,14 +55,16 @@ Thank you.`,
   };
 
   useEffect(() => {
-    console.log(templateData.variables, templateData.button, templateData.button.length, '................');
-
+    console.log(templateData,'.....................');
+    
     if (templateData.account !== '' && templateData.templateName !== '' && templateData.category !== '' && templateData.language !== '' && templateData.bodyText !== '') {
       const variableMatches = templateFormData.bodyText.match(/{{\d+}}/g) || [];
-      if (variableMatches.length === templateData.variables.length) {
-        setIsValidated(true);
-      } else {
-        setIsValidated(false);
+      if (templateData.variables) {
+        if (variableMatches.length === templateData.variables.length) {
+          setIsValidated(true);
+        } else {
+          setIsValidated(false);
+        }
       }
     }
   }, [templateData])
@@ -127,12 +117,9 @@ Thank you.`,
     setStatus(null);
     const updatedTemplateData = await handleFileUpload()
     try {
-      const response = await submitTemplate({ variables: { templateData: updatedTemplateData } });
+      const response = await submitTemplate({ variables: { templateData: updatedTemplateData, dbTemplateId: templateStatusAId.dbTemplateId } });
       const result = response.data;
       setStatus(result);
-      if (result.success) {
-        setTemplateId(JSON.parse(result.data).id);
-      }
     } catch (err: any) {
       setError(err.message || 'Failed to submit template');
       console.error(err);
@@ -144,6 +131,55 @@ Thank you.`,
 
   const [currentComponent, setCurrentComponent] = useState("Body")
   const templateComponents = ["Body", "Buttons", "Variables"]
+
+
+  const handleSaveTemplate = async (e: any) => {
+    if (!templateData.templateName) {
+      setError('Template name is required to save.');
+      return;
+    }
+    e.preventDefault();
+    setIsSubmitting(true);
+    setError(null);
+    setStatus(null);
+    const updatedTemplateData = await handleFileUpload()
+
+    try {
+      const response = await saveTemplate({ variables: { templateData: updatedTemplateData } });
+      const result = response.data;
+      setStatus(result);
+    } catch (err: any) {
+      setError(err.message || 'Failed to save template');
+      console.error(err);
+
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+
+  const handleUpdateTemplate = async (e: any) => {
+    if (!templateData.templateName) {
+      setError('Template name is required to save.');
+      return;
+    }
+    e.preventDefault();
+    setIsSubmitting(true);
+    setError(null);
+    setStatus(null);
+    const updatedTemplateData = await handleFileUpload()
+    try {
+      const response = await updateTemplate({ variables: { templateData: updatedTemplateData, dbTemplateId: templateStatusAId.dbTemplateId } });
+      const result = response.data;
+      setStatus(result);
+    } catch (err: any) {
+      setError(err.message || 'Failed to update template');
+      console.error(err);
+
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
 
   return (
     <div>
@@ -173,13 +209,50 @@ Thank you.`,
               {currentComponent === "Variables" ?
                 <TemplateVariables setTemplateData={setTemplateData} />
                 : <></>}
-              <button
-                type="submit"
-                disabled={isSubmitting || !isValidated}
-                className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 disabled:bg-indigo-400 p-2"
-              >
-                {isSubmitting ? 'Submitting...' : 'Submit Template'}
-              </button>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <button
+                  type="button"
+                  onClick={handleSaveTemplate}
+                  disabled={templateStatusAId.status !== ''}
+                  className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 disabled:bg-indigo-400 p-2"
+                >
+                  {isSubmitting ? 'Saving...' : 'Save Template'}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleUpdateTemplate}
+                  disabled={
+                    templateStatusAId.status !== 'pending' && 
+                    templateStatusAId.status !== 'saved' && 
+                    templateStatusAId.status !== 'approved' && 
+                    templateStatusAId.status !== 'rejected'}
+                  className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 disabled:bg-indigo-400 p-2"
+                >
+                  {isSubmitting ? 'Editing...' : 'Edit Template'}
+                </button>
+                <button
+                  type="submit"
+                  disabled={
+                    isSubmitting || 
+                    !isValidated || 
+                    (templateStatusAId.status !== 'saved' && templateStatusAId.status !== '')}
+                  className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 disabled:bg-indigo-400 p-2"
+                >
+                  {isSubmitting ? 'Submitting...' : 'Submit Template'}
+                </button>
+                <button
+                  type="submit"
+                  disabled={
+                    isSubmitting ||
+                    !isValidated ||
+                    !(templateStatusAId.status === 'approved' || templateStatusAId.status === 'rejected')
+                  }
+                  className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 disabled:bg-indigo-400 p-2"
+                >
+                  {isSubmitting ? 'Updating...' : 'Update & Submit Template'}
+                </button>
+              </div>
+
             </div>
           </div>
         </div>
@@ -190,13 +263,13 @@ Thank you.`,
           <pre className="bg-gray-100 p-4 rounded-md overflow-auto">
             {JSON.stringify(status, null, 2)}
           </pre>
-          {templateId && (
+          {/* {templateId && (
             <button type="button"
               className="mt-4 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700"
             >
               Refresh Status
             </button>
-          )}
+          )} */}
         </div>
       )}
       {error && (

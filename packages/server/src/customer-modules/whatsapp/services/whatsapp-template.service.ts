@@ -87,20 +87,23 @@ export class TemplateService {
       language: templateData.language,
       rawComponents: templateData.components
     });
-    return await this.templateRepository.save(newTemplate);
+
+    await this.templateRepository.save(newTemplate);
+    return newTemplate;
   }
 
   async updateTemplate(updatetemplateData, dbTemplateId, instantsId?: string) {
     const template = await this.templateRepository.findOne({ where: { id: dbTemplateId } })
-    if (!template) throw Error("template doesn't exist")
-    if (instantsId) {
-      template.account = instantsId;
-    }
-    template.templateId = updatetemplateData.id;
-    template.status = updatetemplateData.status;
-    template.category = updatetemplateData.category;
-    console.log(template, 'updted temlate......................');
-
+    console.log(template,".........template.......................");
+    console.log(updatetemplateData,".........updatetemplateData.......................");
+    if(!template) throw Error("template doesn't exist")
+    if(instantsId) template.account = instantsId;
+    if(updatetemplateData.name) template.templateName = updatetemplateData.name;
+    if(updatetemplateData.status) template.status = updatetemplateData.status;
+    if(updatetemplateData.id) template.templateId = updatetemplateData.id;
+    if(updatetemplateData.category) template.category = updatetemplateData.category;
+    if(updatetemplateData.language) template.language = updatetemplateData.language;
+    if(updatetemplateData.components) template.rawComponents = updatetemplateData.components;
     await this.templateRepository.save(template);
     return template;
   }

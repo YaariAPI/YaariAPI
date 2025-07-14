@@ -81,26 +81,26 @@ export class WhatsAppResolver {
   @Mutation(() => WaTemplateResponseDto)
   async submitWaTemplate(
     @Context('req') req, @Args('templateData') templateData: WaTemplateRequestInput,
-    @Args('waTemplateId', { nullable: true }) waTemplateId?: string
+    @Args('dbTemplateId', { nullable: true }) dbTemplateId?: string
   ): Promise<WaTemplateResponseDto> {
-    console.log(templateData,'........................templatedata');
     const wa_api = await this.getWhatsAppApi(templateData.account)
-    
     const payload = await this.waTemplateService.generatePayload(templateData);
-    console.log(payload?.components[0],'payload.....................');
-    
-    // const savedTemplate = await this.waTemplateService.saveTemplate(payload,templateData.account)
     const payload_json = JSON.stringify({ ...payload });
-    let response;
-    if (waTemplateId) {
-      response = await wa_api.submitTemplateUpdate(payload_json, waTemplateId);
-      
-      // await this.waTemplateService.updateTemplate(JSON.parse(response.data), savedTemplate.id)
-    } else {
-      response = await wa_api.submitTemplateNew(payload_json);
-      // console.log(response.data, savedTemplate.id,'.......................updatedtemta');
 
-      // await this.waTemplateService.updateTemplate(JSON.parse(response.data), savedTemplate.id)
+    let response;
+    if (dbTemplateId) {
+      const template =  await this.waTemplateService.updateTemplate(payload, dbTemplateId)
+      console.log(template,'....................');
+      console.log(template.templateId,'....................');
+      console.log(dbTemplateId,'......dbTemplateId..............');
+      
+      response = await wa_api.submitTemplateUpdate(payload_json, template.templateId);
+      await this.waTemplateService.updateTemplate(JSON.parse(response.data), template.id)
+      
+    } else {
+    const savedTemplate = await this.waTemplateService.saveTemplate(payload,templateData.account)
+      response = await wa_api.submitTemplateNew(payload_json);
+      await this.waTemplateService.updateTemplate(JSON.parse(response.data), savedTemplate.id)
     }
     return response
   }

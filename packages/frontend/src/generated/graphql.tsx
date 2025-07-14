@@ -562,11 +562,25 @@ query findAllTemplate {
 }`
 
 export const SUBMIT_TEMPLATE = gql`
-mutation SubmitTemplate($templateData: WaTemplateRequestInput!) {
-  submitWaTemplate(templateData: $templateData) {
+mutation SubmitTemplate($templateData: WaTemplateRequestInput!, $dbTemplateId: String) {
+  submitWaTemplate(templateData: $templateData, dbTemplateId: $dbTemplateId) {
     success
     data
     error
+  }
+}`;
+
+export const SAVE_TEMPLATE = gql`
+mutation saveTemplate($templateData: WaTemplateRequestInput!) {
+  saveTemplate(templateData: $templateData) {
+    id
+  }
+}`;
+
+export const UPDATE_TEMPLATE = gql`
+mutation updateTemplate($templateData: WaTemplateRequestInput!, $dbTemplateId: String!) {
+  updateTemplate(templateData: $templateData, dbTemplateId: $dbTemplateId) {
+    id
   }
 }`;
 
