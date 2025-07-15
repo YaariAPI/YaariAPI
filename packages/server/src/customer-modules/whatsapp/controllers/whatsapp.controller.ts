@@ -6,7 +6,6 @@ import fs from 'fs/promises';
 import { WhatsAppAccountService } from 'src/customer-modules/whatsapp/services/whatsapp-account.service';
 import { WhatsAppSDKService } from 'src/customer-modules/whatsapp/services/whatsapp-api.service'
 import { instantsService } from "src/customer-modules/instants/instants.service";
-import { WhatsappInstants } from 'src/customer-modules/instants/Instants.entity';
 import { GqlAuthGuard } from 'src/modules/auth/guards/gql-auth.guard';
 
 @Controller('whatsapp')

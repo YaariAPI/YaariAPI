@@ -20,6 +20,7 @@ import { instantsModule } from 'src/customer-modules/instants/instants.module';
 import { WhatsAppController } from 'src/customer-modules/whatsapp/controllers/whatsapp.controller';
 import { TemplateFileUpload } from './controllers/templateFileUpload.controller';
 import { TemplateResolver } from './resolvers/template.resolver';
+import { AttachmentModule } from '../attachment/attachment.module';
 
 
 @Module({
@@ -29,6 +30,7 @@ import { TemplateResolver } from './resolvers/template.resolver';
         NestjsQueryTypeOrmModule.forFeature([]),
         TypeORMModule,
         instantsModule,
+        AttachmentModule
         // ContactsModule,
       ],
       services: [WhatsAppAccountService, WhatsAppSDKService, TemplateService],

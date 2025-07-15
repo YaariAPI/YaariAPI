@@ -20,7 +20,7 @@ const TemplateMain = () => {
             {!isTemplateFormVis ?
               <SubmitButton type='button' onClick={() => {
                 setTemplateFormData({
-                  account: '',
+                  accountId: '',
                   templateName: '',
                   category: 'UTILITY',
                   language: 'en_US',
@@ -33,7 +33,8 @@ Thank you.`,
                   header_handle: '',
                   button: [],
                   variables: [],
-                  fileUrl: ''
+                  fileUrl: '',
+                  attachmentId: null
                 })
                 setTemplateStatusAId({
                   dbTemplateId: '',
@@ -58,7 +59,7 @@ Thank you.`,
               <div>
                 <div onClick={() => {
                   setTemplateFormData({
-                    account: '',
+                    accountId: '',
                     templateName: '',
                     category: 'UTILITY',
                     language: 'en_US',
@@ -68,6 +69,7 @@ Thank you.`,
                     header_handle: '',
                     button: [],
                     variables: [],
+                    attachmentId: null
                   })
                   setTemplateStatusAId({
                     dbTemplateId: '',

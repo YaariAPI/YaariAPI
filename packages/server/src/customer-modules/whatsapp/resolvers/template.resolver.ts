@@ -15,22 +15,22 @@ export class TemplateResolver {
 
     @UseGuards(GqlAuthGuard)
     @Mutation(() => WhatsAppTemplate)
-    async saveTemplate(@Args('templateData') templateData: WaTemplateRequestInput) : Promise<WhatsAppTemplate> {
-        const payload = await this.templateService.generatePayload(templateData)
-        return await this.templateService.saveTemplate(payload, templateData.account);
+    async saveTemplate(@Args('templateData') templateData: WaTemplateRequestInput): Promise<WhatsAppTemplate> {
+        // const payload = await this.templateService.generatePayload(templateData)
+        return await this.templateService.saveTemplate(templateData, templateData.accountId);
     }
 
     @UseGuards(GqlAuthGuard)
     @Mutation(() => WhatsAppTemplate)
-    async updateTemplate(@Args('templateData') templateData: WaTemplateRequestInput, 
-                         @Args('dbTemplateId') dbTemplateId: string) : Promise<WhatsAppTemplate> {
-          try {
-    const payload = await this.templateService.generatePayload(templateData);
-    return await this.templateService.updateTemplate(payload, dbTemplateId);
-  } catch (err) {
-    console.error("UpdateTemplate Resolver Error:", err);
-    throw err;
-  }
+    async updateTemplate(@Args('templateData') templateData: WaTemplateRequestInput,
+        @Args('dbTemplateId') dbTemplateId: string): Promise<WhatsAppTemplate> {
+        try {
+            const payload = await this.templateService.generatePayload(templateData);
+            return await this.templateService.updateTemplate(payload, dbTemplateId);
+        } catch (err) {
+            console.error("UpdateTemplate Resolver Error:", err);
+            throw err;
+        }
     }
 
     @UseGuards(GqlAuthGuard)

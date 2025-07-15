@@ -9,12 +9,11 @@ import { WhatsAppAccountService } from './services/whatsapp-account.service';
 import { WhatsAppSDKService } from './services/whatsapp-api.service'
 import { TemplateService } from './services/whatsapp-template.service';
 import { instantsService } from "src/customer-modules/instants/instants.service";
-import { WhatsappInstants } from 'src/customer-modules/instants/Instants.entity';
 import { GqlAuthGuard } from 'src/modules/auth/guards/gql-auth.guard';
 import { WaTemplateRequestInput } from 'src/customer-modules/whatsapp/dtos/whatsapp.template.dto';
 import { WaTemplateResponseDto } from 'src/customer-modules/whatsapp/dtos/whatsapp.response.dto';
 
-@Resolver(() => WhatsappInstants)
+@Resolver(() => WhatsAppAccount)
 export class WhatsAppResolver {
   // constructor(
   //   private readonly whatsAppApiService: WhatsAppSDKService,
@@ -83,24 +82,30 @@ export class WhatsAppResolver {
     @Context('req') req, @Args('templateData') templateData: WaTemplateRequestInput,
     @Args('dbTemplateId', { nullable: true }) dbTemplateId?: string
   ): Promise<WaTemplateResponseDto> {
-    const wa_api = await this.getWhatsAppApi(templateData.account)
-    const payload = await this.waTemplateService.generatePayload(templateData);
-    const payload_json = JSON.stringify({ ...payload });
+    const wa_api = await this.getWhatsAppApi(templateData.accountId)
 
     let response;
     if (dbTemplateId) {
-      const template =  await this.waTemplateService.updateTemplate(payload, dbTemplateId)
-      console.log(template,'....................');
-      console.log(template.templateId,'....................');
-      console.log(dbTemplateId,'......dbTemplateId..............');
-      
-      response = await wa_api.submitTemplateUpdate(payload_json, template.templateId);
+      const template: any = await this.waTemplateService.updateTemplate(templateData, dbTemplateId)
+      let payload
+      if (template.attachment) {
+        const header_handle = await wa_api.uploadDemoDocument(template.attachment);
+        payload = await this.waTemplateService.generatePayload(templateData, header_handle);
+      }
+      const payload_json = JSON.stringify({ ...payload });
+      response = await wa_api.submitTemplateUpdate(payload_json, template.waTemplateId);
       await this.waTemplateService.updateTemplate(JSON.parse(response.data), template.id)
-      
     } else {
-    const savedTemplate = await this.waTemplateService.saveTemplate(payload,templateData.account)
+
+      const template: any = await this.waTemplateService.saveTemplate(templateData, templateData.accountId)
+      let payload
+      if (template.attachment) {
+        const header_handle = await wa_api.uploadDemoDocument(template.attachment);
+        payload = await this.waTemplateService.generatePayload(templateData, header_handle);
+      }
+      const payload_json = JSON.stringify({ ...payload });
       response = await wa_api.submitTemplateNew(payload_json);
-      await this.waTemplateService.updateTemplate(JSON.parse(response.data), savedTemplate.id)
+      await this.waTemplateService.updateTemplate(JSON.parse(response.data), template.id)
     }
     return response
   }
@@ -115,7 +120,6 @@ export class WhatsAppResolver {
       const findTrueInstants = await this.instantsService.FindSelectedInstants()
       if (!findTrueInstants)
         throw new Error("Not found whatsappaccount")
-
       return this.whatsAppApiService.getWhatsApp(findTrueInstants)
     }
   }
@@ -137,18 +141,18 @@ export class WhatsAppResolver {
     return data
   }
 
-  @UseGuards(GqlAuthGuard)
-  @Mutation(() => WaTemplateResponseDto)
-  async submitTemplate(
-    @Context('req') req, @Args('templateData') templateData: WaTemplateRequestInput,
-  ): Promise<WaTemplateResponseDto> {
-    const result = await this.waTemplateService.submitTemplate(templateData);
-    // return {
-    //     success: result.success,
-    //     data: result.data ? JSON.stringify(result.data) : undefined,
-    //     error: result.error ? JSON.stringify(result.error) : undefined,
-    // };
-    return result
-  }
+  // @UseGuards(GqlAuthGuard)
+  // @Mutation(() => WaTemplateResponseDto)
+  // async submitTemplate(
+  //   @Context('req') req, @Args('templateData') templateData: WaTemplateRequestInput,
+  // ): Promise<WaTemplateResponseDto> {
+  //   const result = await this.waTemplateService.submitTemplate(templateData);
+  //   // return {
+  //   //     success: result.success,
+  //   //     data: result.data ? JSON.stringify(result.data) : undefined,
+  //   //     error: result.error ? JSON.stringify(result.error) : undefined,
+  //   // };
+  //   return result
+  // }
 
 }

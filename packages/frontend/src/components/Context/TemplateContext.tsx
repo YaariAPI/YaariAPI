@@ -11,7 +11,7 @@ export const TemplateContext = createContext<TemplateContextProps | undefined>(u
 
 export const TemplateProvider = ({ children }: any) => {
   const [templateFormData, setTemplateFormData] = useState({
-    account: '',
+    accountId: '',
     templateName: '',
     category: 'UTILITY',
     language: 'en_US',
@@ -24,11 +24,14 @@ Thank you.`,
     header_handle: '',
     button: [],
     variables: [],
-    fileUrl: ''
+    fileUrl: '',
+    headerText: '',
+    attachmentId: null
   });
   const [ templateStatusAId, setTemplateStatusAId ] = useState({
     dbTemplateId : '',
-    status : ''
+    status : '',
+    attachmentId: null
   });
 
 //   const [templateData, setTemplateData] = useState({

@@ -3,8 +3,8 @@ import {
   ReadResolverOpts,
   PagingStrategies,
 } from '@ptc-org/nestjs-query-graphql';
+import { WhatsAppAccount } from '../whatsapp/entities/whatsapp-account.entity';
 
-import { WhatsappInstants } from './Instants.entity';
 
 export const whatappinstanstsAutoResolverOpts: AutoResolverOpts<
   any,
@@ -15,8 +15,8 @@ export const whatappinstanstsAutoResolverOpts: AutoResolverOpts<
   PagingStrategies
 >[] = [
     {
-      EntityClass: WhatsappInstants,
-      DTOClass: WhatsappInstants,
+      EntityClass: WhatsAppAccount,
+      DTOClass: WhatsAppAccount,
       enableTotalCount: true,
       pagingStrategy: PagingStrategies.CURSOR,
       read: {

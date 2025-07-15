@@ -1,26 +1,26 @@
 import axios from 'axios';
 import { Connection, Repository } from 'typeorm';
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { WhatsappInstants } from './Instants.entity';
 import { CreateFormDataInput } from './DTO/create-form-data.input';
 import { WhatsAppTemplate } from 'src/customer-modules/whatsapp/entities/whatsapp-template.entity';
 import { WorkspaceService } from 'src/modules/workspace/workspace.service';
 import { ContactsService } from 'src/customer-modules/contacts/contacts.service';
 import { CONNECTION } from 'src/modules/workspace-manager/workspace.manager.symbols';
+import { WhatsAppAccount } from '../whatsapp/entities/whatsapp-account.entity';
 
 @Injectable()
 export class instantsService {
-        private instantsRepository: Repository<WhatsappInstants>
+        private instantsRepository: Repository<WhatsAppAccount>
         private templateRepository: Repository<WhatsAppTemplate>
     constructor(
         @Inject(CONNECTION) connection: Connection,
         private readonly contactsService: ContactsService,
     ) {
-        this.instantsRepository = connection.getRepository(WhatsappInstants);
+        this.instantsRepository = connection.getRepository(WhatsAppAccount);
         this.templateRepository = connection.getRepository(WhatsAppTemplate);
       }
 
-    async CreateInstants(WhatsappInstantsData: CreateFormDataInput): Promise<WhatsappInstants | null | string> {
+    async CreateInstants(WhatsappInstantsData: CreateFormDataInput): Promise<WhatsAppAccount | null | string> {
         const instant = await this.instantsRepository.findOne({
             where: { phoneNumberId: WhatsappInstantsData.phoneNumberId }
         });
@@ -87,10 +87,10 @@ export class instantsService {
                 account: instants?.id,
                 templateName: template.name,
                 status: template.status,
-                templateId: template.id,
+                waTemplateId: template.id,
                 category: template.category,
                 language: template.language,
-                rawComponents: components
+                // rawComponents: components
                 // bodyText: body?.text,
                 // footerText: footer?.text,
                 // header_handle: header?.example?.header_handle?.[0]?.handle || null,
@@ -126,13 +126,13 @@ export class instantsService {
         }
     };
 
-    async findAllInstants(): Promise<WhatsappInstants[]> {
+    async findAllInstants(): Promise<WhatsAppAccount[]> {
         return await this.instantsRepository.find({
             order: { createdAt: 'ASC' }
         });
     }
 
-    async UpdateInstants(id: string, updatedInstants: CreateFormDataInput): Promise<WhatsappInstants | null> {
+    async UpdateInstants(id: string, updatedInstants: CreateFormDataInput): Promise<WhatsAppAccount | null> {
         const existingInstants = await this.instantsRepository.findOne({ where: { id } });
         if (!existingInstants) {
             throw new NotFoundException(`Instant with ID ${id} not found`);
@@ -148,7 +148,7 @@ export class instantsService {
         return this.instantsRepository.save(existingInstants);
     }
 
-    async DeleteInstants(id: string): Promise<WhatsappInstants | null> {
+    async DeleteInstants(id: string): Promise<WhatsAppAccount | null> {
         const deleteInstants = await this.instantsRepository.findOne({ where: { id } });
         if (deleteInstants)
             return await this.instantsRepository.remove(deleteInstants)
@@ -178,13 +178,13 @@ export class instantsService {
         });
     }
 
-    async findInstantsByPhoneNoId(phoneNumberId: string): Promise<WhatsappInstants | null> {
+    async findInstantsByPhoneNoId(phoneNumberId: string): Promise<WhatsAppAccount | null> {
         return await this.instantsRepository.findOne({
             where: { phoneNumberId: phoneNumberId },
         });
     }
 
-    async findInstantsByInstantsId(instantsId: string): Promise<WhatsappInstants | null> {
+    async findInstantsByInstantsId(instantsId: string): Promise<WhatsAppAccount | null> {
         return await this.instantsRepository.findOne({
             where: { id: instantsId },
         });

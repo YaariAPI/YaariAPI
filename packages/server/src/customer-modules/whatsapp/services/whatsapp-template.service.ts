@@ -9,6 +9,7 @@ import { WaTemplateRequestInput } from "../dtos/whatsapp.template.dto";
 import { instantsService } from "src/customer-modules/instants/instants.service";
 import { CONNECTION } from 'src/modules/workspace-manager/workspace.manager.symbols';
 import { WhatsAppSDKService } from './whatsapp-api.service'
+import { AttachmentService } from "src/customer-modules/attachment/attachment.service";
 
 
 @Injectable()
@@ -19,12 +20,14 @@ export class TemplateService {
     @Inject(CONNECTION) connection: Connection,
     private readonly instantsService: instantsService,
     private readonly whatsAppApiService: WhatsAppSDKService,
+    private readonly attachmentService: AttachmentService,
+
   ) {
     this.templateRepository = connection.getRepository(WhatsAppTemplate);
   }
 
   async submitTemplate(templateData: WaTemplateRequestInput): Promise<any> {
-    const findSelectedInstants = await this.instantsService.findInstantsByInstantsId(templateData.account)
+    const findSelectedInstants = await this.instantsService.findInstantsByInstantsId(templateData.accountId)
     if (!findSelectedInstants)
       throw new Error("Whatsapp configration missing!")
     const wa_api = this.whatsAppApiService.getWhatsApp(findSelectedInstants)
@@ -79,66 +82,111 @@ export class TemplateService {
   }
 
   async saveTemplate(templateData, instantsId) {
-    const newTemplate = this.templateRepository.create({
-      account: instantsId,
-      templateName: templateData.name,
-      status: 'saved',
-      category: templateData.category,
-      language: templateData.language,
-      rawComponents: templateData.components
-    });
+    const account = await this.instantsService.findInstantsByInstantsId(instantsId);
+    console.log(account,"........account...................");
+    
+    if (!account) throw Error('template doesnt exist')
+    if (templateData.attachmentId) {
+      const attachment = await this.attachmentService.findOneAttachmentById(templateData.attachmentId)
+      if (!attachment) throw Error('attachment doesnt exist')
+      const newTemplate = this.templateRepository.create({
+        account: account,
+        templateName: templateData.templateName,
+        status: 'saved',
+        category: templateData.category,
+        language: templateData.language,
+        headerType: templateData.headerType,
+        bodyText: templateData.bodyText,
+        footerText: templateData.footerText,
+        button: templateData.button,
+        variables: templateData.variables,
+        attachment: attachment
+      });
+      await this.templateRepository.save(newTemplate);
+      return newTemplate;
+    } else {
+      const newTemplate = this.templateRepository.create({
+        account: instantsId,
+        templateName: templateData.templateName,
+        status: 'saved',
+        category: templateData.category,
+        language: templateData.language,
+        headerType: templateData.headerType,
+        bodyText: templateData.bodyText,
+        footerText: templateData.footerText,
+        button: templateData.button,
+        variables: templateData.variables,
+      });
+      await this.templateRepository.save(newTemplate);
+      return newTemplate;
+    }
 
-    await this.templateRepository.save(newTemplate);
-    return newTemplate;
+
+
+
+
   }
 
   async updateTemplate(updatetemplateData, dbTemplateId, instantsId?: string) {
     const template = await this.templateRepository.findOne({ where: { id: dbTemplateId } })
-    console.log(template,".........template.......................");
-    console.log(updatetemplateData,".........updatetemplateData.......................");
-    if(!template) throw Error("template doesn't exist")
-    if(instantsId) template.account = instantsId;
-    if(updatetemplateData.name) template.templateName = updatetemplateData.name;
-    if(updatetemplateData.status) template.status = updatetemplateData.status;
-    if(updatetemplateData.id) template.templateId = updatetemplateData.id;
-    if(updatetemplateData.category) template.category = updatetemplateData.category;
-    if(updatetemplateData.language) template.language = updatetemplateData.language;
-    if(updatetemplateData.components) template.rawComponents = updatetemplateData.components;
+    if (!template) throw Error("template doesn't exist")
+    if (instantsId) {
+      const account = await this.instantsService.findInstantsByInstantsId(instantsId);
+      if (!account) throw Error('template doesnt exist')
+      template.account = account;
+    }
+    if (updatetemplateData.templateName) template.templateName = updatetemplateData.templateName;
+    if (updatetemplateData.status) template.status = updatetemplateData.status;
+    if (updatetemplateData.id) template.waTemplateId = updatetemplateData.id;
+    if (updatetemplateData.category) template.category = updatetemplateData.category;
+    if (updatetemplateData.language) template.language = updatetemplateData.language;
+    if (updatetemplateData.headerType) template.headerType = updatetemplateData.headerType;
+    if (updatetemplateData.headerText) template.headerText = updatetemplateData.headerText;
+    if (updatetemplateData.bodyText) template.bodyText = updatetemplateData.bodyText;
+    if (updatetemplateData.footerText) template.footerText = updatetemplateData.footerText;
+    if (updatetemplateData.button) template.button = updatetemplateData.button;
+    if (updatetemplateData.variables) template.variables = updatetemplateData.variables;
+    if (updatetemplateData.attachmentId) {
+      const attachment = await this.attachmentService.findOneAttachmentById(updatetemplateData.attachmentId)
+      if (!attachment) throw Error('attachment doesnt exist')
+      template.attachment = attachment
+    }
+
     await this.templateRepository.save(template);
     return template;
   }
 
-  async generatePayload(templateData: WaTemplateRequestInput) {
+  async generatePayload(templateData: any, header_handle?: string) {
     const variablesValue = templateData?.variables?.map((variable: any) => variable.value) || [];
     const payload = {
       name: templateData.templateName.toLowerCase().replace(/\s/g, '_'),
       category: templateData.category,
       language: templateData.language,
       components: [
-        templateData.header_handle && templateData.headerType === 'TEXT' && {
+        templateData.headerType === 'TEXT' && {
           type: 'HEADER',
           format: 'TEXT',
-          text: templateData.header_handle,
+          text: templateData.headerText,
         },
         templateData.headerType === 'IMAGE' && {
           type: 'HEADER',
           format: 'IMAGE',
           example: {
-            header_handle: [templateData.header_handle],
+            header_handle: [header_handle],
           },
         },
         templateData.headerType === 'VIDEO' && {
           type: 'HEADER',
           format: 'VIDEO',
           example: {
-            header_handle: [templateData.header_handle],
+            header_handle: [header_handle],
           },
         },
         templateData.headerType === 'DOCUMENT' && {
           type: 'HEADER',
           format: 'DOCUMENT',
           example: {
-            header_handle: [templateData.header_handle],
+            header_handle: [header_handle],
           },
         },
         {
@@ -262,8 +310,8 @@ export class TemplateService {
     })
   }
 
-  async findTemplateByTemplateId(templateId: string) {
-    return await this.templateRepository.findOne({ where: { templateId } })
+  async findTemplateByTemplateId(waTemplateId: string) {
+    return await this.templateRepository.findOne({ where: { waTemplateId } })
   }
 
   async uploadFile(url) {

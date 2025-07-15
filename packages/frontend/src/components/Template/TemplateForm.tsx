@@ -6,7 +6,7 @@ import TemplateButton from "./TemplateButton";
 import TemplateVariables from "./TemplateVariables";
 import { useMutation } from "@apollo/client";
 import { cookieStorage } from '@src/utils/cookie-storage';
-import { SAVE_TEMPLATE, SUBMIT_TEMPLATE, UPDATE_TEMPLATE } from "@src/generated/graphql";
+import { CreateOneAttachmentDoc, SAVE_TEMPLATE, SUBMIT_TEMPLATE, UPDATE_TEMPLATE } from "@src/generated/graphql";
 import { TemplateContext } from "@components/Context/TemplateContext";
 import { Post } from "@src/modules/domain-manager/hooks/axios";
 
@@ -23,9 +23,9 @@ type WaVariableInput = {
 };
 
 type TemplateData = {
-  account: string;
+  accountId: string;
   templateName: string;
-  category: 'UTILITY' | 'MARKETING' | 'TRANSACTIONAL' | string;
+  category: 'UTILITY' | 'MARKETING' | 'AUTHENTICATION' | string;
   language: string;
   bodyText: string;
   footerText: string;
@@ -34,6 +34,7 @@ type TemplateData = {
   headerType: 'NONE' | 'TEXT' | 'IMAGE' | 'VIDEO' | 'DOCUMENT';
   header_handle: string;
   fileUrl: string;
+  attachmentId: string | null;
 };
 
 const TemplateForm = () => {
@@ -45,6 +46,8 @@ const TemplateForm = () => {
   const [submitTemplate] = useMutation(SUBMIT_TEMPLATE);
   const [saveTemplate] = useMutation(SAVE_TEMPLATE);
   const [updateTemplate] = useMutation(UPDATE_TEMPLATE);
+  const [createOneAttachment] = useMutation(CreateOneAttachmentDoc);
+
 
 
   const [file, setFile] = useState<File | null>(null);
@@ -55,9 +58,7 @@ const TemplateForm = () => {
   };
 
   useEffect(() => {
-    console.log(templateData,'.....................');
-    
-    if (templateData.account !== '' && templateData.templateName !== '' && templateData.category !== '' && templateData.language !== '' && templateData.bodyText !== '') {
+    if (templateData.accountId !== '' && templateData.templateName !== '' && templateData.category !== '' && templateData.language !== '' && templateData.bodyText !== '') {
       const variableMatches = templateFormData.bodyText.match(/{{\d+}}/g) || [];
       if (templateData.variables) {
         if (variableMatches.length === templateData.variables.length) {
@@ -84,12 +85,27 @@ const TemplateForm = () => {
         const formData = new FormData();
         formData.append('file', file);
         const response = await Post(
-          `/fileupload`,
+          `/upload`,
           formData,
           { headers: { 'Content-Type': 'multipart/form-data' } }
         );
-        updatedTemplateData['header_handle'] = response.data;
-        updatedTemplateData['fileUrl'] = response.data.fileUrl;
+
+        // updatedTemplateData['header_handle'] = response.data;
+        // updatedTemplateData['fileUrl'] = response.data.file.filename;
+        if (response.data) {
+          const attachment: any = await createOneAttachment({
+            variables: {
+              name: response.data.file.filename,
+              originalname: response.data.file.originalname,
+              mimetype: response.data.file.mimetype,
+              size: response.data.file.size,
+              path: response.data.file.path,
+              createdAt: "",
+              updatedAt: "",
+            }
+          })
+          updatedTemplateData['attachmentId'] = attachment.data.CreateOneAttachment.id;
+        }
         setTemplateData(updatedTemplateData);
         return updatedTemplateData
       } catch (error) {
@@ -222,9 +238,9 @@ const TemplateForm = () => {
                   type="button"
                   onClick={handleUpdateTemplate}
                   disabled={
-                    templateStatusAId.status !== 'pending' && 
-                    templateStatusAId.status !== 'saved' && 
-                    templateStatusAId.status !== 'approved' && 
+                    templateStatusAId.status !== 'pending' &&
+                    templateStatusAId.status !== 'saved' &&
+                    templateStatusAId.status !== 'approved' &&
                     templateStatusAId.status !== 'rejected'}
                   className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 disabled:bg-indigo-400 p-2"
                 >
@@ -233,8 +249,8 @@ const TemplateForm = () => {
                 <button
                   type="submit"
                   disabled={
-                    isSubmitting || 
-                    !isValidated || 
+                    isSubmitting ||
+                    !isValidated ||
                     (templateStatusAId.status !== 'saved' && templateStatusAId.status !== '')}
                   className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 disabled:bg-indigo-400 p-2"
                 >

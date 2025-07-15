@@ -5,28 +5,28 @@ import axios from "axios";
 import path from 'path';
 import fs from 'fs/promises';
 
-import { WhatsappInstants } from "src/customer-modules/instants/Instants.entity";
 // import { WhatsAppAccountService } from "./whatsapp-account.service";
 import { CONNECTION } from 'src/modules/workspace-manager/workspace.manager.symbols';
+import { WhatsAppAccount } from "../entities/whatsapp-account.entity";
 
 const DEFAULT_ENDPOINT = "https://graph.facebook.com/v23.0"
 
 @Injectable()
 export class WhatsAppSDKService {
-  getWhatsApp(whatsAppAccount: WhatsappInstants) {
+  getWhatsApp(whatsAppAccount: WhatsAppAccount) {
     return new WhatsAppApiService(whatsAppAccount);
   }
 }
 
 export class WhatsAppApiService {
-  private readonly wa_account_id: WhatsappInstants;
+  private readonly wa_account_id: WhatsAppAccount;
   private readonly phone_uid: String;
   private readonly token: String;
   private readonly httpService: HttpService;
   private readonly is_shared_account: boolean;
 
   constructor(
-    private readonly whatsAppAccount: WhatsappInstants,
+    private readonly whatsAppAccount: WhatsAppAccount,
   ) {
       this.wa_account_id = whatsAppAccount
       this.phone_uid = whatsAppAccount.phoneNumberId;
@@ -96,10 +96,9 @@ export class WhatsAppApiService {
   }
 
   prepare_error_response(response){
-      //
       //  This method is used to prepare error response
       //  :return tuple[str, int]: (error_message, whatsapp_error_code | -1)
-      //
+
       if (response.response.data.error){
           const error = response.response.data.error;
           let desc = error.message;
@@ -213,14 +212,14 @@ export class WhatsAppApiService {
   }
 
 
-  async uploadDemoDocument(attachment?: any, url?){
+  async uploadDemoDocument(attachment?: any){
     // """
     //     This method is used to get a handle to later upload a demo document.
     //     Only use for template registration.
 
     //     API documentation https://developers.facebook.com/docs/graph-api/guides/upload
     // """
-    const { filename, mimetype, path, size }: any = attachment;
+    const { name, mimetype, path, size }: any = attachment;
 
     //......................its need if we use 
     const buffer = await fs.readFile(path)
@@ -230,8 +229,8 @@ export class WhatsAppApiService {
     // Open session
     const appId = this.wa_account_id.appId
     const params = {
-        'file_length': attachment.file_size,
-        'file_type': attachment.mimetype,
+        'file_length': size,
+        'file_type': mimetype,
         'access_token': this.token,
     }
     console.info("Open template sample document upload session with file size %s Bites of mimetype %s on account %s [%s]", attachment.file_size, attachment.mimetype, this.wa_account_id.name, this.wa_account_id.id)
@@ -257,6 +256,8 @@ export class WhatsAppApiService {
       }})
     const upload_file_response_json = upload_file_response.data
     const file_handle = upload_file_response_json.h
+    console.log(file_handle,'............file_handle......................');
+    
     if (!file_handle)
         throw new Error("Document upload failed, please retry after sometime.")
     return file_handle

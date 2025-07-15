@@ -552,14 +552,12 @@ mutation getTemplateStatus($templateId: String!) {
 export const findWaAllTemplate = gql`
 query findAllTemplate {
     findAllTemplate {
-      account
-      category
-      id
-      language
-      status
-      templateId
-      templateName
-      rawComponents
+    id
+    language
+    status
+    category
+    templateName
+    waTemplateId
   }
 }`
 
@@ -643,18 +641,18 @@ export const CreateOneAttachmentDoc = gql`
   mutation CreateOneAttachmentMutation(
     $name: String!,
     $originalname: String!,
-    $type: String!,
+    $mimetype: String!,
     $size: Float!,
-    $fullPath: String!,
+    $path: String!,
     $createdAt: DateTime!,
     $updatedAt: DateTime!) {
       CreateOneAttachment(
         Attachment: {
           name: $name,
           originalname: $originalname,
-          type: $type,
+          mimetype: $mimetype,
           size: $size,
-          fullPath: $fullPath,
+          path: $path,
           createdAt: $createdAt,
           updatedAt: $updatedAt,
         }

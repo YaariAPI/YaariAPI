@@ -13,10 +13,9 @@ const TemplateTable = ({ setIsTemplateFormVis, setIsTemplatePreviewVis }: any) =
     const [templates, setTemplates] = useState([{
         id: '',
         status: '',
-        templateId: '',
+        waTemplateId: '',
         templateName: '',
         category: '',
-        rawComponents: []
     }])
 
     const [GetTemplateStatus] = useMutation(GET_TEMPLATE_STATUS);
@@ -72,9 +71,9 @@ const TemplateTable = ({ setIsTemplateFormVis, setIsTemplatePreviewVis }: any) =
                                 </th>
                                 <td
                                     className="px-6 py-4 text-center truncate max-w-[150px]"
-                                    title={template.templateId}
+                                    title={template.waTemplateId}
                                 >
-                                    {template.templateId}
+                                    {template.waTemplateId}
                                 </td>
                                 <td
                                     className="px-6 py-4 text-center truncate max-w-[150px]"
@@ -99,13 +98,13 @@ const TemplateTable = ({ setIsTemplateFormVis, setIsTemplatePreviewVis }: any) =
                                     <button
                                         disabled = {template.status.toLowerCase() === 'pending'}
                                         onClick={() => {
-                                            const templatePreviewData = convertRawPayloadToPreviewData(template.rawComponents);
-                                    setTemplateFormData({
-                                        account : template.account,
-                                        templateName: template.templateName,
-                                        category: template.category,
-                                        language: template.language,
-                                        ...templatePreviewData})
+                                    //         const templatePreviewData = convertRawPayloadToPreviewData(template.rawComponents);
+                                    // setTemplateFormData({
+                                    //     accountId : template.accountId,
+                                    //     templateName: template.templateName,
+                                    //     category: template.category,
+                                    //     language: template.language,
+                                    //     ...templatePreviewData})
                                     setTemplateStatusAId({
                                         dbTemplateId : template.id,
                                         status : template.status.toLowerCase()
@@ -117,7 +116,7 @@ const TemplateTable = ({ setIsTemplateFormVis, setIsTemplatePreviewVis }: any) =
                                         <GrDocumentUpdate />
                                     </button>
                                 </td>
-                                <td onClick={() => HandleTempalteStatus(template.templateId)}
+                                <td onClick={() => HandleTempalteStatus(template.waTemplateId)}
                                     className="px-6 py-4 text-center truncate max-w-[150px] underline text-blue-500 hover:text-blue-700 cursor-pointer"
                                     title="sendTemplate"
                                 >

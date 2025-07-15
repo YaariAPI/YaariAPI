@@ -21,12 +21,12 @@ const TemplateHeader = ({ templateData, handleInputChange, handleFileChange }: a
 
       {templateData.headerType === 'TEXT' ?
         <div>
-          <label className="block text-sm font-medium text-gray-700 mt-4">Header Text (Optional)</label>
+          <label className="block text-sm font-medium text-gray-700 mt-4">Header Text</label>
           <input
           required
             type="text"
-            name="header_handle"
-            value={templateData.header_handle}
+            name="headerText"
+            value={templateData.headerText}
             onChange={handleInputChange}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm outline-none p-2"
             placeholder="Welcome to Our Service"
